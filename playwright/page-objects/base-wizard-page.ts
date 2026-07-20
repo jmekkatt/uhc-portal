@@ -5,8 +5,7 @@ import { BasePage } from './base-page';
 /**
  * Shared wizard page object for OSD and ROSA create-cluster flows.
  *
- * Holds version/channel locators and common wizard actions that are identical
- * across products. Product-specific logic stays in:
+ * Product-specific logic stays in:
  *   - CreateRosaWizardPage (ROSA-specific)
  *   - CreateOSDWizardPage (OSD-specific)
  *
