@@ -10,9 +10,7 @@ A guide for **how to approach testing** create-cluster wizard changes in OCM UI 
 2. [Product and Variant Coverage](#product-and-variant-coverage)
 3. [Testing Options](#testing-options)
 4. [Checklist: Testing a New Wizard Feature](#checklist-testing-a-new-wizard-feature)
-5. [Dependencies to Plan For](#dependencies-to-plan-for)
-6. [Regression Impact and Dependents](#regression-impact-and-dependents)
-7. [Common Testing Pitfalls](#common-testing-pitfalls)
+5. [Regression Impact and Dependents](#regression-impact-and-dependents)
 
 ---
 
@@ -57,9 +55,9 @@ If you are unsure, start with the product variant you changed, then add **at lea
 
 ## Testing Options
 
-Most changes need **more than one** of these options, but rarely just one. Use the [decision table](#choosing-the-right-option) below to decide which apply.
+Most changes need **more than one** of these options, but rarely just one. Pick the combination that fits your change.
 
-The majority of wizard tests also require live credentials, quota, and often pre-provisioned cloud resources — see [Dependencies to Plan For](#dependencies-to-plan-for).
+The majority of wizard tests also require live credentials, quota, and often pre-provisioned cloud resources.
 
 ### 1. Targeted validation (wizard walkthrough, no cluster create)
 
@@ -101,7 +99,7 @@ The majority of wizard tests also require live credentials, quota, and often pre
 - You need to confirm the cluster reaches expected post-create state
 - Day 2 or cluster details need verification after create
 
-**Note:** Requires live credentials, quota, and pre-provisioned cloud resources. The majority of wizard tests need these — see [Dependencies to Plan For](#dependencies-to-plan-for).
+**Note:** Requires live credentials, quota, and pre-provisioned cloud resources. The majority of wizard tests need these.
 
 ### 4. Component-level testing
 
@@ -171,3 +169,55 @@ Use this when adding or changing wizard functionality.
 - [ ] Other product variant using the same shared component
 - [ ] Review and submission for flows you did not directly change
 - [ ] Adjacent non-wizard pages if the same component or data is reused
+
+---
+
+## Regression Impact and Dependents
+
+### High-impact shared areas
+
+Changes here commonly affect **both OSD and ROSA** and multiple wizard steps:
+
+| Shared area | Dependents to re-test |
+| ----------- | --------------------- |
+| Cluster details (version, channel, region, encryption) | Details step, review, any step that depends on version/region |
+| Machine pool | Machine pool step, review, Day 2 machine pool management |
+| Networking (AZ, ingress, CIDR) | Networking substeps, review, VPC step when applicable |
+| Upgrade policy | Cluster updates step, review, channel Day 1/Day 2 flows |
+| VPC selection | Networking/VPC steps, creation flows using existing VPC |
+| Shared form controls | Every step using those inputs |
+| Review screen | All flows — summary must stay accurate |
+
+### Navigation and footer
+
+Footer logic decides when Next is enabled. Dependents include:
+
+- Every step that calls async APIs before advance (credential check, role list, VPC load)
+- Confirmation dialogs (e.g. billing on Hosted ROSA)
+- Silent failures where the wizard appears valid but does not advance
+
+After footer changes, run **validation and at least one creation path** per affected product.
+
+### Product parity
+
+OSD and ROSA often wrap the same shared fields in separate screens. A fix or regression in one product’s details screen may need a **parity check** on the other even if you only changed one file.
+
+### Downstream outside the wizard
+
+| Wizard area | Possible dependents outside wizard |
+| ----------- | ----------------------------------- |
+| Machine pool defaults | Cluster details machine pools tab |
+| Channel / version | Upgrade settings, Day 2 channel change specs |
+| Networking / VPC | Cluster networking tab, delete flows |
+| Log forwarding | Cluster details log forwarding |
+| Billing account | Subscriptions, quota views |
+
+When scoping regression, ask: **who else reads or displays this value after create?**
+
+### Regression scope workflow
+
+1. Map the change to the wizard step(s) and whether the UI is shared or specific.
+2. List **downstream steps** in the same wizard (review, later conditional steps).
+3. List **other product variants** using the same shared piece.
+4. List **post-create** surfaces that use the same setting.
+5. Run targeted validation for each affected variant; add creation only when submission or API integration changed.
