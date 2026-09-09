@@ -25,7 +25,7 @@ Wizard flows are not isolated screens. When you test a wizard — or any new fea
 - **Conditional behaviour** — Visibility, validation, and navigation often depend on earlier selections (cloud provider, control plane type, region, networking mode, and so on).
 - **Async gating** — Next may stay disabled while credentials are verified, roles or VPCs are loaded, billing status is resolved, or **quota is checked**. Tests must account for loading and failure states, not only the happy path.
 - **Review as a dependent** — New or changed fields should be checked on the input step **and** on the review summary before submission.
-- **Downstream lifecycle** — Some wizard settings also matter after creation (machine pools, channels, networking). A wizard change may affect cluster details or Day 2 flows even if the wizard itself still works.
+- **Downstream lifecycle** — Most wizard settings also matter after creation (machine pools, channels, networking). A wizard change may affect cluster details or Day 2 flows even if the wizard itself still works.
 
 Treat the wizard as one connected flow, not a set of independent pages.
 
@@ -57,7 +57,7 @@ If you are unsure, start with the product variant you changed, then add **at lea
 
 ## Testing Options
 
-Pick the lightest option that gives enough confidence. You do not need full cluster creation for every change.
+Choose testing depth from the options below based on what the change affects — not the fastest path alone. Because most wizard settings carry into cluster details and Day 2 flows, plan beyond a single-step walkthrough when the change touches shared components, submission, or settings that persist after create.
 
 ### 1. Targeted validation (wizard walkthrough, no cluster create)
 
